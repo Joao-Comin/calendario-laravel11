@@ -94,19 +94,22 @@
             const abrirModal = (info) => {
                 if(modal.classList.contains('hidden')){
                     modal.classList.remove('hidden');
-
                     modal.style.transition = 'opacity 300ms';
                     setTimeout(() => {
                         modal.style.opacity = 1;
-                    },100);
+                    }, 100);
                 }
-                const startInput = document.querySelector('#start');
-                const endInput = document.querySelector('#end');
-                if (startInput && endInput) { 
-                    startInput.value = info.dateStr + "T08:00"; 
-                    endInput.value = info.dateStr + "T18:00";
-                }
-            }
+
+                
+                document.querySelector('.modal-title h3').innerText = 'Cadastrar Evento';
+                document.querySelector('#id').value = ''; 
+                document.querySelector('#title').value = '';
+                document.querySelector('#color').value = '#000000';
+                document.querySelector('#start').value = info.dateStr + "T08:00";
+                document.querySelector('#end').value = info.dateStr + "T18:00";
+
+                document.querySelector('.btn-delete').classList.add('hidden');
+            };
 
             const abrirModalEditar = (info) => {
                 if(modal.classList.contains('hidden')){
@@ -134,6 +137,9 @@
                 document.querySelector('#start').value = data_start;
                 document.querySelector('#end').value = data_end;
                 document.querySelector('.btn-delete').classList.remove('hidden');
+
+                
+
             }
 
             const moverEvento = (info) => {
@@ -197,53 +203,47 @@
 
         document.querySelector('#form-add-event').addEventListener('submit', function(event) {
             event.preventDefault();
+
             let title = document.querySelector('#title');
             let start = document.querySelector('#start');
             let end = document.querySelector('#end');
             let color = document.querySelector('#color');
+            let eventId = document.querySelector('#id').value.trim();
 
             if (title.value == '') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Campo Obrigatório!',
-                    text: 'O nome do evento deve ser preenchido.',
-                });
+                Swal.fire({ icon: 'error', title: 'Campo Obrigatório!', text: 'O nome do evento deve ser preenchido.' });
                 title.style.borderColor = 'red';
                 title.focus();
                 return false;
             }
             if (start.value == '') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Campo Obrigatório!',
-                    text: 'A data de início do evento deve ser preenchida.',
-                });
+                Swal.fire({ icon: 'error', title: 'Campo Obrigatório!', text: 'A data de início do evento deve ser preenchida.' });
                 start.style.borderColor = 'red';
                 start.focus();
                 return false;
             }
             if (end.value == '') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Campo Obrigatório!',
-                    text: 'A data de fim do evento deve ser preenchida.',
-                });
+                Swal.fire({ icon: 'error', title: 'Campo Obrigatório!', text: 'A data de fim do evento deve ser preenchida.' });
                 end.style.borderColor = 'red';
                 end.focus();
                 return false;
             }
+
+            
+            let isEditing = eventId !== ''; 
+            let mensagem = isEditing ? "Evento Atualizado!" : "Evento Criado!";
+            
             Swal.fire({
                 icon: 'success',
-                title: 'Evento Criado!',
-                text: 'O evento foi criado com sucesso!',
+                title: mensagem,
+                text: `O evento foi ${isEditing ? 'atualizado' : 'criado'} com sucesso!`,
                 timer: 2000,
                 showConfirmButton: false
             }).then(() => {
-                window.location.reload(); 
+                this.submit(); 
             });
-
-            this.submit();
         });
+
 
         document.addEventListener('DOMContentLoaded', function() {
             const btnDelete = document.querySelector('.btn-delete');
