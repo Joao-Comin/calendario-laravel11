@@ -14,33 +14,38 @@
     <div class="modal-opened hidden">
       <div class="modal">
         <div class="modal-header">
-          <div class="modal-title">
-            <h3>Cadastrar Eventos</h3>
-          </div>
-          <div class="modal-close">x</div>
+            <div class="modal-title">
+                <h3>Cadastrar Eventos</h3>
+            </div>
+            <div class="modal-close">x</div>
+        </div>
+        <div class="modal-switch">
+            <button type="button" id="btnEvento" class="active">Evento</button>
+            <button type="button" id="btnTarefa">Tarefa</button>
         </div>
         <form action="{{ route('eventos.store') }}" method="post" id="form-add-event">
-          @csrf
-          <div class="modal-body">
-            <input type="hidden" name="id" id="id">
-            <input type="hidden" name="action" value=""> 
-
-            <label for="title">Nome do Evento</label>
-            <input type="text" id="title" name="title" value="{{ old('title') }}">
-
-            <label for="color">Selecione uma cor</label>
-            <input type="color" id="color" name="color" value="{{ old('color') }}">
-
-            <label for="start">Início do Evento</label>
-            <input type="datetime-local" id="start" name="start" value="{{ old('start') }}">
-
-            <label for="end">Fim do Evento</label>
-            <input type="datetime-local" id="end" name="end" value="{{ old('end') }}">
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn-save">Salvar</button>
-            <button type="button" class="btn-delete hidden">Excluir</button>
-          </div>
+            @csrf
+            <div class="modal-body">
+                <input type="hidden" name="id" id="id">
+                <input type="hidden" name="action" value="">
+                <input type="hidden" name="task" id="task" value="0">
+        
+                <label for="title">Nome do Evento</label>
+                <input type="text" id="title" name="title" value="{{ old('title') }}">
+        
+                <label for="color" id="label-color">Selecione uma cor</label>
+                <input type="color" id="color" name="color" value="{{ old('color') }}">
+        
+                <label for="start">Início do Evento</label>
+                <input type="datetime-local" id="start" name="start" value="{{ old('start') }}">
+        
+                <label for="end" id="label-end">Fim do Evento</label>
+                <input type="datetime-local" id="end" name="end" value="{{ old('end') }}">
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn-save">Salvar</button>
+                <button type="button" class="btn-delete hidden">Excluir</button>
+            </div>
         </form>
       </div>
     </div>
@@ -65,7 +70,7 @@
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth,listWeek,redirectButton'
                 },
                 navLinks: true,
                 selectable: true,
@@ -87,7 +92,23 @@
                     moverEvento(info);
                 },
                 events: '/eventos',
-            });
+                customButtons: {
+                    redirectButton: {
+                        text: 'Tarefas',
+                        click: function() {
+                            window.location.href = '/tarefas';
+                        }
+                    }
+                },
+                eventDidMount: function(info){
+                    if(info.event.extendedProps.task){
+                        info.el.style.border = '2px dashed blue';
+                        info.el.style.backgroundColor = 'red';
+                        info.el.style.color = 'white';
+                    }
+                }
+             });
+            
             calendar.render();
             const modal = document.querySelector('.modal-opened');
 
@@ -100,18 +121,20 @@
                     }, 100);
                 }
 
-                
                 document.querySelector('.modal-title h3').innerText = 'Cadastrar Evento';
                 document.querySelector('#id').value = ''; 
                 document.querySelector('#title').value = '';
                 document.querySelector('#color').value = '#000000';
                 document.querySelector('#start').value = info.dateStr + "T08:00";
                 document.querySelector('#end').value = info.dateStr + "T18:00";
+                document.querySelector('#task').value = "0";
 
                 document.querySelector('.btn-delete').classList.add('hidden');
+                btnEvento.click(); 
             };
 
             const abrirModalEditar = (info) => {
+                // console.log("🔹 Dados do evento clicado:", info.event);
                 if(modal.classList.contains('hidden')){
                     modal.classList.remove('hidden');
 
@@ -124,24 +147,26 @@
                     info.event.start.toLocaleString().replace(',','').split(' ')[0].split('/').reverse().join('-'),
                     info.event.start.toLocaleString().replace(',','').split(' ')[1]
                 ].join(' ');
-                let data_end = [
+                let data_end = info.event.end ? [
                     info.event.end.toLocaleString().replace(',','').split(' ')[0].split('/').reverse().join('-'),
                     info.event.end.toLocaleString().replace(',','').split(' ')[1]
-                ].join(' ');
-                console.log(data_start);
-                console.log(data_end);
+                ].join(' ') : '';
+
                 document.querySelector('.modal-title h3').innerHtml = 'Editar Evento';
                 document.querySelector('#id').value = info.event.id;
                 document.querySelector('#title').value = info.event.title;
                 document.querySelector('#color').value = info.event.backgroundColor;
                 document.querySelector('#start').value = data_start;
                 document.querySelector('#end').value = data_end;
+                document.querySelector('#task').value = info.event.extendedProps.task == 1 || info.event.extendedProps.task === "1" ? "1" : "0";
                 document.querySelector('.btn-delete').classList.remove('hidden');
 
-                
-
-            }
-
+                if (info.event.extendedProps.task == 1 || info.event.extendedProps.task === "1") {
+                    btnTarefa.click();
+                } else {
+                    btnEvento.click();
+                }
+            };
             const moverEvento = (info) => {
                 let id = info.event.id;
                 let start = info.event.startStr;
@@ -200,7 +225,7 @@
                 },300);
             }
         });
-
+        //requisição de envio do formulário
         document.querySelector('#form-add-event').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -209,6 +234,7 @@
             let end = document.querySelector('#end');
             let color = document.querySelector('#color');
             let eventId = document.querySelector('#id').value.trim();
+            let isTask = document.querySelector('#task').checked ? 1 : 0;
 
             if (title.value == '') {
                 Swal.fire({ icon: 'error', title: 'Campo Obrigatório!', text: 'O nome do evento deve ser preenchido.' });
@@ -222,16 +248,24 @@
                 start.focus();
                 return false;
             }
-            if (end.value == '') {
-                Swal.fire({ icon: 'error', title: 'Campo Obrigatório!', text: 'A data de fim do evento deve ser preenchida.' });
-                end.style.borderColor = 'red';
-                end.focus();
-                return false;
+            // if (end.value == '') {
+            //     Swal.fire({ icon: 'error', title: 'Campo Obrigatório!', text: 'A data de fim do evento deve ser preenchida.' });
+            //     end.style.borderColor = 'red';
+            //     end.focus();
+            //     return false;
+            // }
+            let excluir = new FormData(this);
+            console.log(excluir);
+            if(isTask){
+                excluir.delete('#end');
+                excluir.delete('#color');
             }
 
             
             let isEditing = eventId !== ''; 
             let mensagem = isEditing ? "Evento Atualizado!" : "Evento Criado!";
+            let formData = new FormData(this);
+            formData.set('task', isTask);
             
             Swal.fire({
                 icon: 'success',
@@ -305,6 +339,38 @@
                 });
             });
         });
+        
+    document.addEventListener('DOMContentLoaded', function() {
+    const btnEvento = document.getElementById('btnEvento');
+    const btnTarefa = document.getElementById('btnTarefa');
+    const inputTask = document.getElementById('task');
+    const labelColor = document.getElementById('label-color');
+    const inputColor = document.getElementById('color');
+    const labelEnd = document.getElementById('label-end');
+    const inputEnd = document.getElementById('end');
+
+    btnEvento.addEventListener('click', function() {
+        btnEvento.classList.add('active');
+        btnTarefa.classList.remove('active');
+        inputTask.value = "0";
+        labelColor.style.display = 'block';
+        inputColor.style.display = 'block';
+        labelEnd.style.display = 'block';
+        inputEnd.style.display = 'block';
+    });
+
+    btnTarefa.addEventListener('click', function() {
+        btnEvento.classList.remove('active');
+        btnTarefa.classList.add('active');
+        inputTask.value = "1";
+        labelColor.style.display = 'none';
+        inputColor.style.display = 'none';
+        labelEnd.style.display = 'none';
+        inputEnd.style.display = 'none';
+    });
+
+    btnEvento.click();
+});
     </script>
 </body>
 </html>

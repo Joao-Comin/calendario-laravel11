@@ -14,5 +14,6 @@ class Evento extends Model
         'start',
         'end',
         'color',
+        'task',
     ];
 }

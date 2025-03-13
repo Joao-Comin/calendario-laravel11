@@ -8,7 +8,7 @@ class EventoController extends Controller
 {
     public function index()
     {
-        $eventos = Evento::select('id', 'title', 'start', 'end', 'color')->get();
+        $eventos = Evento::select('id', 'title', 'start', 'end', 'color', 'task')->get();
         return response()->json($eventos);
     }
 
@@ -21,10 +21,10 @@ class EventoController extends Controller
             'end' => 'nullable|date|after_or_equal:start',
             'color' => 'required|string|max:7',
             'id' => 'nullable|integer|exists:eventos,id',
-            'action' => 'nullable|string'
+            'action' => 'nullable|string',
+            'task' => 'nullable|boolean',
         ]);
-
-        
+        $dados['task'] = $request->has('task') ? (bool) $request->task : false;       
 
         if (empty($dados['id'])) {
             Evento::create($dados);
@@ -45,7 +45,12 @@ class EventoController extends Controller
             'start' => 'required|date',
             'end' => 'required|date|after_or_equal:start',
             'color' => 'nullable|string|max:7',
+            'task' => 'nullable|boolean',
         ]));
+        if ($request->has('task')) {
+            $evento->task = (bool) $request->task;
+            $evento->save();
+        }
 
         return response()->json(['success' => true]);
     }
