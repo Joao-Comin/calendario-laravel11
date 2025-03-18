@@ -6,15 +6,21 @@ use Illuminate\Http\Request;
 
 class EventoController extends Controller
 {
-    public function index()
-    {
-        $eventos = Evento::select('id', 'title', 'start', 'end', 'color', 'task')->get();
-        return response()->json($eventos);
+    public function index(Request $request)
+{
+    $query = Evento::select('id', 'title', 'start', 'end', 'color', 'task', 'finalizado', 'description');
+    
+    if ($request->has('task') && $request->task == '1') {
+        $query->where('task', true); 
     }
+
+    $eventos = $query->get();
+    
+    return response()->json($eventos);
+}
 
     public function store(Request $request)
     {
-        
         $dados = $request->validate([
             'title' => 'required|string|max:255',
             'start' => 'required|date',
@@ -23,19 +29,23 @@ class EventoController extends Controller
             'id' => 'nullable|integer|exists:eventos,id',
             'action' => 'nullable|string',
             'task' => 'nullable|boolean',
+            'finalizado' => 'nullable|boolean',
+            'description' => 'nullable|string',
         ]);
-        $dados['task'] = $request->has('task') ? (bool) $request->task : false;       
+        $dados['task'] = $request->has('task') ? (bool) $request->task : false;
+        $dados['finalizado'] = $request->has('finalizado') ? (bool) $request->finalizado : false;
 
         if (empty($dados['id'])) {
             Evento::create($dados);
             return redirect()->back()->with('success', 'Evento criado com sucesso!');
-        } 
-        
+        }
+
         $evento = Evento::findOrFail($dados['id']);
         $evento->update($dados);
 
         return redirect()->back()->with('success', 'Evento atualizado com sucesso!');
     }
+
     public function update(Request $request, $id)
     {
         $evento = Evento::findOrFail($id);
@@ -43,9 +53,11 @@ class EventoController extends Controller
         $evento->update($request->validate([
             'title' => 'required|string|max:255',
             'start' => 'required|date',
-            'end' => 'required|date|after_or_equal:start',
+            'end' => 'date|after_or_equal:start',
             'color' => 'nullable|string|max:7',
             'task' => 'nullable|boolean',
+            'finalizado' => 'nullable|boolean',
+            'description' => 'nullable|string',
         ]));
         if ($request->has('task')) {
             $evento->task = (bool) $request->task;
@@ -66,5 +78,4 @@ class EventoController extends Controller
         $evento->delete();
         return response()->json(['success' => true, 'message' => 'Evento excluído com sucesso']);
     }
-
 }

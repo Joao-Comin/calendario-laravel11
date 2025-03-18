@@ -1,73 +1,238 @@
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f8f9fa;
-    
-}
-
-header {
-    font-size: large;
-    padding: 20px 0;
-}
-
-header h1 {
-    margin: 0;
-    font-size: 24px;
-}
-
+/* Estilização do contêiner principal */
 .container {
-    margin-top: 20px;
-    max-width: 1100px;
+    width: 100%;
+    max-width: 1200px;         /* Limite máximo de largura */
+    margin: 0 auto;            /* Centraliza o contêiner */
+    padding: 20px;             /* Espaçamento interno */
+    box-sizing: border-box;    /* Garante que padding esteja dentro da largura */
 }
 
+/* Estilo do título */
+h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Estilo para o botão 'Voltar' */
+button.return {
+    background-color: #0056b3;  /* Cor mais escura */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+button.return:hover {
+    background-color: #003366;  /* Escurece ao passar o mouse */
+}
+
+/* Estilo da lista de tarefas */
+.list-group {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Estilo de cada item da lista */
 .list-group-item {
-    background-color: #fff;
-    border: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;  /* Espaça o conteúdo entre o título e os botões */
+    align-items: center;
+    background-color: #f1f3f5;  /* Fundo mais escuro */
+    border: 1px solid #bbb;     /* Borda mais suave */
     border-radius: 5px;
     padding: 15px;
-    transition: box-shadow 0.3s ease;
-}
-
-.list-group-item:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .list-group-item h5 {
-    margin-bottom: 10px;
-    font-size: 18px;
+    font-size: 1.25rem;
+    color: #333;
 }
 
 .list-group-item p {
-    margin: 0;
-    color: #6c757d;
+    font-size: 1rem;
+    color: #666;
 }
 
-.badge {
-    font-size: 14px;
-    padding: 10px;
-    border-radius: 5px;
+.list-group-item .badge {
+    background-color: #c82333;  /* Badge mais escuro */
+    padding: 10px 20px;
+    font-size: 1rem;
 }
 
-.alert {
-    margin-top: 20px;
+/* Alinha os botões à direita */
+.list-group-item .button-container {
+    display: flex;
+    justify-content: flex-end;  /* Alinha os botões à direita */
+    gap: 10px;                  /* Espaço entre os botões */
 }
 
-footer {
-    background-color: #343a40;
+.list-group-item button {
+    background-color: #218838;  /* Cor mais escura */
     color: #fff;
-    padding: 20px 0;
-    text-align: center;
-    margin-top: 40px;
-}
-.return{
-    margin-bottom: 50px;
-    text-align: center;
-    background-color: #1E2B37;
-    color: white;
+    border: none;
+    padding: 8px 15px;          /* Botões menores */
     border-radius: 5px;
-    margin-top: 20px;
-    
+    font-size: 0.875rem;        /* Fonte menor */
+    cursor: pointer;
 }
-.Titulo{
-    display: inline-block;
-    margin:0;
+
+.list-group-item button:hover {
+    background-color: #1e7e34;  /* Escurece ao passar o mouse */
+}
+
+/* Estilo do botão 'Editar Evento' */
+.list-group-item button:first-of-type {
+    background-color: #e0a800;  /* Cor mais escura */
+}
+
+.list-group-item button:first-of-type:hover {
+    background-color: #c69500;  /* Escurece ao passar o mouse */
+}
+
+/* Estilo do alerta quando não há tarefas */
+.alert {
+    padding: 20px;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+    color: #856404;
+    border-radius: 5px;
+    font-size: 1rem;
+    margin-top: 20px;
+}
+
+.modal-opened{
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9;
+    opacity: 0;
+    margin-top: -25px;
+}
+.modal{
+    position: fixed;
+    width: 500px !important;
+    height: auto !important;
+    overflow: hidden !important;
+    background-color: #fff;
+    margin-left: calc(50% - 250px);
+    margin-top: 25px;
+    
+    padding: 10px;
+    border-radius: 6px;
+    z-index: 99;
+    box-shadow: 7px 6px 30px 0px rgba(0,0,0,0.4)
+}
+
+
+.modal-header{
+    display: flex;
+    justify-content: space-between;
+}
+.modal-close{
+    cursor: pointer;
+    color: red;
+    font-size: 18px;
+    font-weight: 400;
+}
+.modal-body{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px ;
+}
+.modal-body label{
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    margin: 5px 0px;
+}
+.modal-body input{
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    outline: none;
+}
+.modal-body input[type=color]{
+    padding: 0;
+    margin: 0;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.modal-footer{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.modal-footer button{
+    margin-top: 5px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    background-color: rgb(109, 160, 255);
+    border: 1px solid rgb(109, 160, 255);
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-save:hover{
+    background-color: rgb(109, 180, 255);
+    color: rgb(109, 160, 255);
+}
+.btn-delete{
+    background-color: red !important; 
+    border: 1px solid rgb(255, 100, 100) !important;
+
+}
+.btn-delete:hover{
+    background-color: rgb(255, 120, 100) !important;
+    color: red;
+}
+.hidden{
+    display: none;
+}
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-size: 14px;
+}
+.modal-switch {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.modal-switch button {
+    border: none;
+    background: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.modal-switch button.active {
+    border-bottom: 2px solid #000;
+}
+.modal-title{
+    margin-left: 140px;
+    font-size: 20px;
+    font-weight: 600;
 }

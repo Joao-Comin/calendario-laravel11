@@ -14,9 +14,10 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->datetime('start');
-            $table->datetime('end');
+            $table->datetime('end')->nullable();
             $table->string('color')->max(7);
             $table->boolean('task')->default(false);
+            $table->boolean('finalizado')->default(false);
             $table->timestamps();
         });
     }
