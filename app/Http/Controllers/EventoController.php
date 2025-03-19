@@ -3,12 +3,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Evento;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class EventoController extends Controller
 {
     public function index(Request $request)
 {
-    $query = Evento::select('id', 'title', 'start', 'end', 'color', 'task', 'finalizado', 'description');
+    $query = Evento::select('id', 'title', 'start', 'end', 'color', 'task', 'finalizado', 'description', 'user_id');
     
     if ($request->has('task') && $request->task == '1') {
         $query->where('task', true); 
@@ -31,6 +32,7 @@ class EventoController extends Controller
             'task' => 'nullable|boolean',
             'finalizado' => 'nullable|boolean',
             'description' => 'nullable|string',
+            'user_id' => 'integer|nullable',
         ]);
         $dados['task'] = $request->has('task') ? (bool) $request->task : false;
         $dados['finalizado'] = $request->has('finalizado') ? (bool) $request->finalizado : false;
@@ -58,6 +60,7 @@ class EventoController extends Controller
             'task' => 'nullable|boolean',
             'finalizado' => 'nullable|boolean',
             'description' => 'nullable|string',
+            'user_id' => 'nullable|integer',
         ]));
         if ($request->has('task')) {
             $evento->task = (bool) $request->task;
@@ -78,4 +81,9 @@ class EventoController extends Controller
         $evento->delete();
         return response()->json(['success' => true, 'message' => 'Evento excluído com sucesso']);
     }
+    public function getUsers(){
+        
+            $users = User::orderBy('name', 'asc')->get(['id', 'name']);
+            return response()->json($users);
+    }     
 }

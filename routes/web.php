@@ -21,4 +21,4 @@ Route::get('/tarefas/editar/{id}', [TarefasController::class, 'show'])->name('ta
 Route::put('/tarefas/{id}', [TarefasController::class, 'concluido'])->name('tarefas.concluido');
 Route::put('/tarefas/editar/{id}', [TarefasController::class, 'update'])->name('tarefas.update');
 Route::put('/tarefas/desfazer/{id}', [TarefasController::class, 'update2'])->name('tarefas.desfazer');
-
+Route::get('/eventos/usuarios', [EventoController::class, 'getUsers']);

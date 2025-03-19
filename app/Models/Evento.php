@@ -17,5 +17,11 @@ class Evento extends Model
         'task',
         'finalizado',
         'description',
+        'user_id',
     ];
+
+    public function User(){
+        
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

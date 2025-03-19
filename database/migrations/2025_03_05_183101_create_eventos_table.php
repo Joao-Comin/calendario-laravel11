@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('color')->max(7);
             $table->boolean('task')->default(false);
             $table->boolean('finalizado')->default(false);
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();
         });
     }

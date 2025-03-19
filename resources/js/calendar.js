@@ -90,9 +90,26 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('#start').value = info.dateStr + "T08:00";
         document.querySelector('#end').value = info.dateStr + "T18:00";
         document.querySelector('#task').value = "0";
+        document.querySelector("#user_id").value = "";
 
-        document.querySelector('.btn-delete').classList.add('hidden');
-        btnEvento.click();
+        const SelecionarUser = document.querySelector('#user_id');
+        SelecionarUser.innerHTML = '<option value="">Selecione</option>';
+
+        fetch('/eventos/usuarios')
+        .then(response => {
+        if (!response.ok) { 
+            throw new Error('Erro ao carregar usuários: ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(users => {
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.name;
+            SelecionarUser.appendChild(option);
+        });
+    })
     };
 
     const abrirModalEditar = (info) => {
@@ -120,7 +137,31 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('#start').value = data_start;
         document.querySelector('#end').value = data_end;
         document.querySelector('#task').value = info.event.extendedProps.task == 1 || info.event.extendedProps.task === "1" ? "1" : "0";
+        document.querySelector('#user_id').value = info.event.extendedProps.user_id;
         document.querySelector('.btn-delete').classList.remove('hidden');
+
+        const SelecionarUser = document.querySelector('#user_id');
+    SelecionarUser.innerHTML = '<option value="">Selecione</option>'; 
+
+    fetch('/eventos/usuarios') 
+    .then(response => {
+        if (!response.ok) { 
+            throw new Error('Erro ao carregar usuários: ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(users => {
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.name;
+            
+            if (user.id == info.event.extendedProps.user_id) {
+                option.selected = true;  
+            }
+            SelecionarUser.appendChild(option);
+        });
+    })
 
         if (info.event.extendedProps.task == 1 || info.event.extendedProps.task === "1") {
             btnTarefa.click();
@@ -139,8 +180,10 @@ document.addEventListener('DOMContentLoaded', function() {
         let description = info.event.description;
         let task = info.event.extendedProps.task;
         let finalizado = info.event.extendedProps.finalizado;
+        let user_id = info.event.extendedProps.user_id;
+        
 
-        let data = { id, title, color, start, end, description, task, finalizado };
+        let data = { id, title, color, start, end, description, task, finalizado, user_id };
 
         fetch(`/eventos/${id}`, {
             method: 'PUT',
@@ -197,6 +240,7 @@ document.querySelector('#form-add-event').addEventListener('submit', function(ev
     let color = document.querySelector('#color');
     let eventId = document.querySelector('#id').value.trim();
     let isTask = document.querySelector('#task').checked ? 1 : 0;
+    let user_id = document.querySelector('#user_id');
 
     if (title.value == '') {
         Swal.fire({ icon: 'error', title: 'Campo Obrigatório!', text: 'O nome do evento deve ser preenchido.' });

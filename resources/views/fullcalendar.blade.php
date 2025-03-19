@@ -48,6 +48,13 @@
           
                   <label for="end" id="label-end">Fim do Evento</label>
                   <input type="datetime-local" id="end" name="end" value="{{ old('end') }}">
+
+                 
+                  <label for="user_id" class="col-sm-2 col-form-label">Usuário</label>
+                  <select name="user_id" id="user_id" class="form-control">
+                      <option value="">Selecione</option>
+                  </select>
+
               </div>
               <div class="modal-footer">
                   <button type="submit" class="btn-save">Salvar</button>
