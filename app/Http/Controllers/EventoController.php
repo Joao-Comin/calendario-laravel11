@@ -4,20 +4,29 @@ namespace App\Http\Controllers;
 use App\Models\Evento;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class EventoController extends Controller
 {
     public function index(Request $request)
 {
-    $query = Evento::select('id', 'title', 'start', 'end', 'color', 'task', 'finalizado', 'description', 'user_id');
+    $user = Auth::user();
+    
+    $query = Evento::where('user_id', $user->id)
+        ->select('id', 'title', 'start', 'end', 'color', 'task', 'finalizado', 'description', 'user_id');
+    
     
     if ($request->has('task') && $request->task == '1') {
         $query->where('task', true); 
+    }if ($request->has('task') && $request->task == '0') {
+        $query->where('task', false);
     }
+    
 
     $eventos = $query->get();
-    
     return response()->json($eventos);
+    
+   
 }
 
     public function store(Request $request)

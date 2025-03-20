@@ -93,7 +93,7 @@ const abrirModalEditarEvento = (evento) => {
         new Date(evento.end).toLocaleString().replace(',','').split(' ')[1]
     ].join(' ') : '';
 
-    document.querySelector('.modal-title h3').innerText = 'Editar Evento';
+    document.querySelector('.modal-title h3').innerText = 'Editar Tarefa';
     document.querySelector('#id').value = evento.id;
     document.querySelector('#title').value = evento.title;
     document.querySelector('#description').value = evento.description;
@@ -102,12 +102,37 @@ const abrirModalEditarEvento = (evento) => {
     document.querySelector('#end').value = data_end;
     document.querySelector('#task').value = evento.task == 1 || evento.task === "1" ? "1" : "0";
     document.querySelector('.btn-delete').classList.remove('hidden');
+    document.querySelector('#user_id').value = evento.user_id;
+
+    const SelecionarUser = document.querySelector('#user_id');
+    SelecionarUser.innerHTML = '<option value="">Selecione</option>'; 
+
+    fetch('/eventos/usuarios') 
+    .then(response => {
+        if (!response.ok) { 
+            throw new Error('Erro ao carregar usuários: ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(users => {
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.name;
+            
+            if (user.id == evento.user_id) {
+                option.selected = true;  
+            }
+            SelecionarUser.appendChild(option);
+        });
+    })
 
     if (evento.task == 1 || evento.task === "1") {
         btnTarefa.click();
     } else {
         btnEvento.click();
     }
+    
 };
 
 const modalCloseButton = document.querySelector('.modal-close');
@@ -216,7 +241,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 modal.classList.remove('hidden');
                 modal.style.opacity = 1;
                 teste.style.display = 'block';
+                document.querySelector('#user_id').value = user_id;
+                const SelecionarUser = document.querySelector('#user_id');
+                SelecionarUser.innerHTML = '<option value="">Selecione</option>'; 
+
+                fetch('/eventos/usuarios') 
+                .then(response => {
+                    if (!response.ok) { 
+                        throw new Error('Erro ao carregar usuários: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(users => {
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.name;
+                        
+                        if (user.id == user_id) {
+                            option.selected = true;  
+                        }
+                        SelecionarUser.appendChild(option);
+                    });
+                })
                 inputTask.value = "1";
+
+                
             }
         });
     }

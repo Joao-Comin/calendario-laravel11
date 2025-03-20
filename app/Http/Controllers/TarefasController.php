@@ -4,13 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Evento;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TarefasController extends Controller
 {
     public function index()
     {
-        $tarefasNaoConcluidas = Evento::where('task', '1')->where('finalizado', '0')->get();
-        $tarefasConcluidas = Evento::where('task', '1')->where('finalizado', '1')->get();
+        $user = Auth::user();
+        $tarefasNaoConcluidas = Evento::where('task', '1')->where('finalizado', '0')->where('user_id', $user->id)->get();
+        $tarefasConcluidas = Evento::where('task', '1')->where('finalizado', '1')->where('user_id', $user->id)->get();
         return view('tarefas', compact('tarefasNaoConcluidas', 'tarefasConcluidas'));
     }
 
@@ -57,6 +59,7 @@ class TarefasController extends Controller
             'task' => 'nullable|boolean',
             'finalizado' => 'nullable|boolean',
             'description' => 'nullable|string',
+            'user_id' => 'nullable|integer'
         ]));
         if ($request->has('task')) {
             $evento->task = (bool) $request->task;
@@ -78,4 +81,5 @@ class TarefasController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Tarefa desmarcada como concluída']);
     }
+    
 }

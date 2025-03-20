@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
+        themeSystem: 'standart',
         headerToolbar: {
-            left: 'prev,next today FilterButton',
+            left: 'prev,next today TaskButton EventButton',
             center: 'title',
             right: 'dayGridMonth,listWeek,redirectButton'
         },
@@ -35,8 +36,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = '/tarefas';
                 }
             },
-            FilterButton: {
-                text: 'Filtro',
+            TaskButton: {
+                text: 'Task',
                 click: function() {
                     fetch('/eventos?task=1')
                         .then(response => response.json())
@@ -47,8 +48,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         .catch(error => {
                             console.error('Erro ao carregar eventos filtrados:', error);
                         });
-                }
+                },
+                
+            },
+            EventButton: {
+                text: 'Eventos',
+                click: function() {
+                    fetch('/eventos?task=0')
+                        .then(response => response.json())
+                        .then(events => {
+                            calendar.removeAllEvents();
+                            events.forEach(event => calendar.addEvent(event));
+                        })
+                        .catch(error => {
+                            console.error('Erro ao carregar eventos filtrados:', error);
+                        });
+                },
+                
             }
+            
         },
 
         eventDidMount: function(info) {

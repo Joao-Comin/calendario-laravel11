@@ -49,7 +49,6 @@
                   <label for="end" id="label-end">Fim do Evento</label>
                   <input type="datetime-local" id="end" name="end" value="{{ old('end') }}">
 
-                 
                   <label for="user_id" class="col-sm-2 col-form-label">Usuário</label>
                   <select name="user_id" id="user_id" class="form-control">
                       <option value="">Selecione</option>
@@ -69,7 +68,11 @@
     @endif
     
     <div class="calendar-area">
-      <h3>Agenda e Full Calendar</h3>
+      @if(auth()->check())
+    <h3>Bem vindo {{ auth()->user()->name }}</h3>
+@else
+    
+@endif
       <div id="calendar"></div>
     </div>
 

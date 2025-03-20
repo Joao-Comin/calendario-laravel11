@@ -29,6 +29,7 @@ body{
 .modal{
     position: fixed;
     width: 500px;
+    height: auto;
     background-color: #fff;
     margin-left: calc(50% - 250px);
     margin-top: 30px;
