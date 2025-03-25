@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/tarefas/${tarefaID}`, {
+                    fetch(`/api/tarefas/${tarefaID}`, {
                         method: 'PUT',
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -55,7 +55,7 @@ const btnEditar = document.querySelectorAll('.btn-editar');
 btnEditar.forEach(function(btn) {
     btn.addEventListener('click', function() {
         const tarefaID = this.getAttribute('data-tarefa-id');
-        fetch(`/tarefas/editar/${tarefaID}`)
+        fetch(`/api/tarefas/editar/${tarefaID}`)
             .then(response => response.json())
             .then(data => {
                 abrirModalEditarEvento(data);
@@ -107,7 +107,7 @@ const abrirModalEditarEvento = (evento) => {
     const SelecionarUser = document.querySelector('#user_id');
     SelecionarUser.innerHTML = '<option value="">Selecione</option>'; 
 
-    fetch('/eventos/usuarios') 
+    fetch('/api/eventos/usuarios') 
     .then(response => {
         if (!response.ok) { 
             throw new Error('Erro ao carregar usuários: ' + response.statusText);
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/tarefas/desfazer/${tarefaID}`, {
+                    fetch(`/api/tarefas/desfazer/${tarefaID}`, {
                         method: 'PUT',
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const SelecionarUser = document.querySelector('#user_id');
                 SelecionarUser.innerHTML = '<option value="">Selecione</option>'; 
 
-                fetch('/eventos/usuarios') 
+                fetch('/api/eventos/usuarios') 
                 .then(response => {
                     if (!response.ok) { 
                         throw new Error('Erro ao carregar usuários: ' + response.statusText);

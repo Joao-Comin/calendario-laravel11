@@ -2,31 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
-body{
+body {
     margin: 0;
     padding: 0;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
 }
-.calendar-area{
+
+.calendar-area {
     margin: 40px 10px;
     padding: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Garante que os itens se alinhem no topo */
+}
+
+#calendar {
+    flex-grow: 1; 
+    max-width: 80%;
+    margin: 0;
+    margin-left: 80px;
+}
+
+.filter-box {
+    width: 250px;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.1);
+    margin-left: 20px; 
+    margin-top: 60px;
+}
+
+.filter-box h4 {
     text-align: center;
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-weight: 600;
 }
-#calendar{
-    max-width: 1100px;
-    margin: 0 auto;
+
+.filter-box select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
 }
-.modal-opened{
+
+.filter-box button {
+    width: 100%;
+    padding: 12px;
+    background-color: rgb(109, 160, 255);
+    color: white;
+    border: 1px solid rgb(109, 160, 255);
+    border-radius: 6px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.filter-box button:hover {
+    background-color: rgb(109, 180, 255);
+    color: rgb(109, 160, 255);
+}
+
+/* Modal */
+.modal-opened {
     position: fixed;
     width: 100%;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 9;
     opacity: 0;
-    margin-top: -40px;
+    margin-top: -0px;
 }
-.modal{
+
+.modal {
     position: fixed;
     width: 500px;
     height: auto;
@@ -36,30 +89,35 @@ body{
     padding: 20px;
     border-radius: 6px;
     z-index: 99;
-    box-shadow: 7px 6px 30px 0px rgba(0,0,0,0.4)
+    box-shadow: 7px 6px 30px 0px rgba(0, 0, 0, 0.4);
 }
-.modal-header{
+
+.modal-header {
     display: flex;
     justify-content: space-between;
 }
-.modal-close{
+
+.modal-close {
     cursor: pointer;
     color: red;
     font-size: 18px;
     font-weight: 400;
 }
-.modal-body{
+
+.modal-body {
     display: flex;
     flex-direction: column;
-    margin-bottom: 10px ;
+    margin-bottom: 10px;
 }
-.modal-body label{
+
+.modal-body label {
     font-size: 14px;
     font-weight: 600;
     color: #555;
     margin: 5px 0px;
 }
-.modal-body input{
+
+.modal-body input {
     padding: 10px;
     font-size: 14px;
     border: 1px solid #ccc;
@@ -67,7 +125,8 @@ body{
     margin-bottom: 5px;
     outline: none;
 }
-.modal-body input[type=color]{
+
+.modal-body input[type=color] {
     padding: 0;
     margin: 0;
     width: 30px;
@@ -76,12 +135,14 @@ body{
     border-radius: 50%;
     cursor: pointer;
 }
-.modal-footer{
+
+.modal-footer {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
 }
-.modal-footer button{
+
+.modal-footer button {
     margin-top: 5px;
     padding: 10px;
     font-size: 14px;
@@ -93,22 +154,25 @@ body{
     cursor: pointer;
 }
 
-.btn-save:hover{
+.btn-save:hover {
     background-color: rgb(109, 180, 255);
     color: rgb(109, 160, 255);
 }
-.btn-delete{
-    background-color: red !important; 
-    border: 1px solid rgb(255, 100, 100) !important;
 
+.btn-delete {
+    background-color: red !important;
+    border: 1px solid rgb(255, 100, 100) !important;
 }
-.btn-delete:hover{
+
+.btn-delete:hover {
     background-color: rgb(255, 120, 100) !important;
     color: red;
 }
-.hidden{
+
+.hidden {
     display: none;
 }
+
 .alert-danger {
     color: #721c24;
     background-color: #f8d7da;
@@ -119,6 +183,7 @@ body{
     border-radius: 5px;
     font-size: 14px;
 }
+
 .modal-switch {
     display: flex;
     justify-content: center;
@@ -136,8 +201,45 @@ body{
 .modal-switch button.active {
     border-bottom: 2px solid #000;
 }
-.modal-title{
+
+.modal-title {
     margin-left: 140px;
     font-size: 20px;
     font-weight: 600;
+}
+.bemvindo{
+    text-align: center;
+}
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    align-items: center;
+}
+
+label {
+    font-size: 16px;
+    margin-bottom: 10px;
+    display: block;
+    color: #333;
+}
+
+.calendario-select {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    background-color: #f9f9f9;
+    color: #333;
+    transition: border-color 0.3s ease;
+}
+
+.calendario-select:focus {
+    border-color: #0056b3;
 }

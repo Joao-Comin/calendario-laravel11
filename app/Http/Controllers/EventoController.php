@@ -1,33 +1,52 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\Calendars;
 use App\Models\Evento;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
+
 class EventoController extends Controller
 {
     public function index(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
+        $calendario = $request->query('calendario', 4); 
     
-    $query = Evento::where('user_id', $user->id)
-        ->select('id', 'title', 'start', 'end', 'color', 'task', 'finalizado', 'description', 'user_id');
+       
+        $query = Evento::query()->select('id', 'title', 'start', 'end', 'color', 'task', 'finalizado', 'description', 'user_id', 'calendar_id');
+        //filtro
+        if ($request->has('task')) {
+            $query->where('task', $request->task == '1');
+            
+        }
+        //aki deixa os calendarios de acordo com o selecionado sendo o Geral como default
+        if ($calendario == 4) {
+            $query->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->whereIn('calendar_id', [1, 2]);
+            })->orWhere('calendar_id', 2);
+        } elseif ($calendario == 1) {
+            $query->where('user_id', $user->id)->where('calendar_id', 1);
+        } elseif ($calendario == 2) {
+            $query->where('calendar_id', 2);
+        } else {
+            return response()->json(['error' => 'Calendário inválido'], 400);
+        }
+        //filtro
+        if ($request->has('task')) {
+            $query->where('task', $request->task == '1');
+            
+        }
+        
+        // Obtém os eventos após os filtros
+        $eventos = $query->get();
     
-    
-    if ($request->has('task') && $request->task == '1') {
-        $query->where('task', true); 
-    }if ($request->has('task') && $request->task == '0') {
-        $query->where('task', false);
+        return response()->json($eventos);
     }
-    
 
-    $eventos = $query->get();
-    return response()->json($eventos);
-    
-   
-}
 
     public function store(Request $request)
     {
@@ -42,6 +61,8 @@ class EventoController extends Controller
             'finalizado' => 'nullable|boolean',
             'description' => 'nullable|string',
             'user_id' => 'integer|nullable',
+            'calendar_id' => 'required|integer'
+            
         ]);
         $dados['task'] = $request->has('task') ? (bool) $request->task : false;
         $dados['finalizado'] = $request->has('finalizado') ? (bool) $request->finalizado : false;
@@ -70,6 +91,7 @@ class EventoController extends Controller
             'finalizado' => 'nullable|boolean',
             'description' => 'nullable|string',
             'user_id' => 'nullable|integer',
+            'calendar_id' => 'required|integer',
         ]));
         if ($request->has('task')) {
             $evento->task = (bool) $request->task;
@@ -95,4 +117,12 @@ class EventoController extends Controller
             $users = User::orderBy('name', 'asc')->get(['id', 'name']);
             return response()->json($users);
     }     
+    
+    public function getCalendarios()
+{
+    $calendarios = Calendars::all();
+    
+    return response()->json($calendarios);
+
+}
 }

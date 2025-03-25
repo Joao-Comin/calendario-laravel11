@@ -20,6 +20,7 @@ return new class extends Migration
             $table->boolean('finalizado')->default(false);
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users');
+            $table->foreignId('calendar_id')->constrained()->onDelete('cascade')->nullable();
             $table->timestamps();
         });
     }

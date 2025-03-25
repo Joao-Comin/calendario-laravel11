@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
-        themeSystem: 'standart',
+        themeSystem: 'standard', 
         headerToolbar: {
-            left: 'prev,next today TaskButton EventButton',
+            left: 'prev,next today',
             center: 'title',
             right: 'dayGridMonth,listWeek,redirectButton'
         },
@@ -15,7 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
         initialView: 'dayGridMonth',
         locale: 'pt-br',
         dateClick: function(info) {
-            abrirModal(info);
+            let calendarioSelecionado = document.getElementById('calendarioSelect').value;
+            
+            abrirModal(info, calendarioSelecionado);
         },
         eventClick: function(info) {
             abrirModalEditar(info);
@@ -26,8 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
         eventResize: function(info) {
             moverEvento(info);
         },
-        //api eventos
-        events: '/eventos',
+        events: '/eventos', //onde puxa os eventos
 
         customButtons: {
             redirectButton: {
@@ -36,52 +37,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = '/tarefas';
                 }
             },
-            TaskButton: {
-                text: 'Task',
-                click: function() {
-                    fetch('/eventos?task=1')
-                        .then(response => response.json())
-                        .then(events => {
-                            calendar.removeAllEvents();
-                            events.forEach(event => calendar.addEvent(event));
-                        })
-                        .catch(error => {
-                            console.error('Erro ao carregar eventos filtrados:', error);
-                        });
-                },
-                
-            },
-            EventButton: {
-                text: 'Eventos',
-                click: function() {
-                    fetch('/eventos?task=0')
-                        .then(response => response.json())
-                        .then(events => {
-                            calendar.removeAllEvents();
-                            events.forEach(event => calendar.addEvent(event));
-                        })
-                        .catch(error => {
-                            console.error('Erro ao carregar eventos filtrados:', error);
-                        });
-                },
-                
-            }
-            
         },
 
         eventDidMount: function(info) {
-            console.log(info);
             if (info.event.extendedProps.task) {
                 info.el.style.border = '2px dashed blue';
-                console.log('finalizado:', info.event.extendedProps.finalizado);
-
                 if (info.event.extendedProps.finalizado == 1) {
                     info.el.style.backgroundColor = 'green';
-                    console.log(info.el);
                 } else {
                     info.el.style.backgroundColor = 'yellow';
                 }
-
                 info.el.style.color = 'black';
             }
         }
@@ -89,9 +54,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
     calendar.render();
 
+    //função para os filtros de tarefas, eventos e sem filtro
+    function Filtro(url) {
+        //console.log(url);
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(events => {
+                calendar.removeAllEvents(); 
+                events.forEach(event => calendar.addEvent(event));
+            })
+            .catch(error => {
+                console.error('Erro ao carregar eventos filtrados:', error);
+            });
+    }
+
+    const taskButton = document.getElementById("taskButton");
+    const eventButton = document.getElementById("eventButton");
+    const noFilterButton = document.getElementById("noFilterButton");
+
+    taskButton.addEventListener("click", function () {
+        //console.log('entrou aki');
+        
+        Filtro('/eventos?task=1');
+    });
+
+    eventButton.addEventListener("click", function () {
+        //console.log('entrou 0');
+        
+        Filtro('/eventos?task=0'); 
+    });
+
+    noFilterButton.addEventListener("click", function () {
+        Filtro('/eventos'); 
+    });
+
+    document.getElementById('calendarioSelect').addEventListener('change', function () {
+        const calendarioSelecionado = this.value;
+        //console.log("Calendário Selecionado:", calendarioSelecionado);
+    
+       
+        Filtro(`/eventos?calendario=${calendarioSelecionado}`);
+    });
+});
+
+    
+    //abrir o modal de criação de eventos/tarefas
     const modal = document.querySelector('.modal-opened');
 
-    const abrirModal = (info) => {
+    const abrirModal = (info,calendarioSelecionado) => {
         if (modal.classList.contains('hidden')) {
             modal.classList.remove('hidden');
             modal.style.transition = 'opacity 300ms';
@@ -99,6 +110,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 modal.style.opacity = 1;
             }, 100);
         }
+
+        
 
         document.querySelector('.modal-title h3').innerText = 'Cadastrar Evento';
         document.querySelector('#id').value = '';
@@ -109,11 +122,37 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('#end').value = info.dateStr + "T18:00";
         document.querySelector('#task').value = "0";
         document.querySelector("#user_id").value = "";
+        document.querySelector('#calendar_id').value = "";
 
-        const SelecionarUser = document.querySelector('#user_id');
+        //pega os calendarios
+        const SelecionarCalendario = document.querySelector('#calendar_id');
+        SelecionarCalendario.innerHTML = '<option value="">Selecione</option>';
+       
+   
+        fetch('/api/eventos/calendarios')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar calendários: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(calendars => {
+                calendars.forEach(calendario => {
+                    const option = document.createElement('option');
+                    option.value = calendario.id;
+                    option.textContent = calendario.name;  
+                    SelecionarCalendario.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao carregar calendários:', error);
+            });
+
+        //pega os users
+         const SelecionarUser = document.querySelector('#user_id');
         SelecionarUser.innerHTML = '<option value="">Selecione</option>';
 
-        fetch('/eventos/usuarios')
+        fetch('/api/eventos/usuarios')
         .then(response => {
         if (!response.ok) { 
             throw new Error('Erro ao carregar usuários: ' + response.statusText);
@@ -128,8 +167,12 @@ document.addEventListener('DOMContentLoaded', function() {
             SelecionarUser.appendChild(option);
         });
     })
+
+   
+   
     };
 
+    //abre o modal de editar o evento/tarefa
     const abrirModalEditar = (info) => {
         if (modal.classList.contains('hidden')) {
             modal.classList.remove('hidden');
@@ -147,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
             info.event.end.toLocaleString().replace(',', '').split(' ')[1]
         ].join(' ') : '';
 
-        document.querySelector('.modal-title h3').innerHTML = 'Editar';
+        document.querySelector('.modal-title h3').innerHTML = 'Editar Eventos';
         document.querySelector('#id').value = info.event.id;
         document.querySelector('#title').value = info.event.title;
         document.querySelector('#description').value = info.event.extendedProps.description;
@@ -156,12 +199,42 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('#end').value = data_end;
         document.querySelector('#task').value = info.event.extendedProps.task == 1 || info.event.extendedProps.task === "1" ? "1" : "0";
         document.querySelector('#user_id').value = info.event.extendedProps.user_id;
+        document.querySelector('#calendar_id').value = info.event.extendedProps.calendar_id;
         document.querySelector('.btn-delete').classList.remove('hidden');
 
+        //pegar os calendarios
+     const SelecionarCalendario = document.querySelector('#calendar_id');
+     SelecionarCalendario.innerHTML = '<option value="">Selecione</option>';
+    
+
+     fetch('/api/eventos/calendarios')
+         .then(response => {
+             if (!response.ok) {
+                 throw new Error('Erro ao carregar calendários: ' + response.statusText);
+             }
+             return response.json();
+         })
+         .then(calendars => {
+             calendars.forEach(calendario => {
+                 const option = document.createElement('option');
+                 option.value = calendario.id;                 
+                 option.textContent = calendario.name;
+                 if (calendario.id == info.event.extendedProps.calendar_id) {
+                    option.selected = true;  // Marca o calendário como selecionado
+                }
+                 SelecionarCalendario.appendChild(option);
+             });
+         })
+         .catch(error => {
+             console.error('Erro ao carregar calendários:', error);
+         });
+
+
+         //pegar os usuarios
         const SelecionarUser = document.querySelector('#user_id');
     SelecionarUser.innerHTML = '<option value="">Selecione</option>'; 
 
-    fetch('/eventos/usuarios') 
+    fetch('/api/eventos/usuarios') 
     .then(response => {
         if (!response.ok) { 
             throw new Error('Erro ao carregar usuários: ' + response.statusText);
@@ -181,15 +254,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     })
 
-        if (info.event.extendedProps.task == 1 || info.event.extendedProps.task === "1") {
+    
+    if (info.event.extendedProps.task == 1 || info.event.extendedProps.task === "1") {
             btnTarefa.click();
         } else {
             btnEvento.click();
         }
+
+       
     };
 
+    //faz com que consiga mover e salvar no banco a modificação do evento em drag and drop
     const moverEvento = (info) => {
-        console.log(info);
+        //console.log('info:',info);
         let id = info.event.id;
         let start = info.event.startStr;
         let end = info.event.endStr;
@@ -199,11 +276,15 @@ document.addEventListener('DOMContentLoaded', function() {
         let task = info.event.extendedProps.task;
         let finalizado = info.event.extendedProps.finalizado;
         let user_id = info.event.extendedProps.user_id;
+        let calendar_id = info.event.extendedProps.calendar_id;
+
+        //console.log('start:', start);
         
 
-        let data = { id, title, color, start, end, description, task, finalizado, user_id };
+        let data = { id, title, color, start, end, description, task, finalizado, user_id, calendar_id};
+        
 
-        fetch(`/eventos/${id}`, {
+        fetch(`/api/eventos/${id}`, {
             method: 'PUT',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -214,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log(data);
+                //console.log(data);
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -245,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.classList.add('hidden');
         }, 300);
     }
-});
+
 
 //requisição de envio do formulário
 document.querySelector('#form-add-event').addEventListener('submit', function(event) {
@@ -259,6 +340,7 @@ document.querySelector('#form-add-event').addEventListener('submit', function(ev
     let eventId = document.querySelector('#id').value.trim();
     let isTask = document.querySelector('#task').checked ? 1 : 0;
     let user_id = document.querySelector('#user_id');
+    let calendar_id = document.querySelector('#calendar_id');  
 
     if (title.value == '') {
         Swal.fire({ icon: 'error', title: 'Campo Obrigatório!', text: 'O nome do evento deve ser preenchido.' });
@@ -289,6 +371,7 @@ document.querySelector('#form-add-event').addEventListener('submit', function(ev
     });
 });
 
+//delete de eventos
 document.addEventListener('DOMContentLoaded', function() {
     const btnDelete = document.querySelector('.btn-delete');
 
@@ -315,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch(`/eventos/${eventId}`, {
+                fetch(`/api/eventos/${eventId}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -350,6 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+//bloquear os campos no modal de criação/edição de uma task
 document.addEventListener('DOMContentLoaded', function() {
     const btnEvento = document.getElementById('btnEvento');
     const btnTarefa = document.getElementById('btnTarefa');
@@ -381,3 +465,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     btnEvento.click();
 });
+
+
+
+
+
+
+
+
+
