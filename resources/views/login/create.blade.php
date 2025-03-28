@@ -5,7 +5,7 @@
         <img class="mb-4" src="{{ asset('images/logo-define-100x100_v1.png') }}" alt="" width="72" height="72">
         <h1 class="h3 mb-3 fw-normal">Novo Usuário</h1>
 
-        <x-alert />
+        
 
         <form action="{{ route('login.store-user') }}" method="POST">
             @csrf

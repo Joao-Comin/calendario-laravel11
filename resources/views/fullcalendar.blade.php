@@ -12,8 +12,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <title>Calender</title>
+    
 
 </head>
+<input type="hidden" id="userId" value="{{ auth()->id() }}">
+
 
 <div class="modal-opened hidden">
     <div class="modal">
@@ -49,16 +52,10 @@
               <label for="end" id="label-end">Fim do Evento</label>
               <input type="datetime-local" id="end" name="end" value="{{ old('end') }}">
 
-              <label for="user_id" class="col-sm-2 col-form-label">Usuário</label>
-              <select name="user_id" id="user_id" class="form-control">
-                  <option value="">Selecione</option>
-              </select>
-
               <label for="calendar_id" class="col-sm-2 col-form-label">Calendario:</label>
-              <select name="calendar_id" id="calendar_id" class="form-control">
-                  <option value="">Selecione</option>
-              </select>
-              
+               <select name="calendar_id" id="calendar_id" class="form-control">
+                   <option value="">Selecione</option>
+               </select>
 
           </div>
           <div class="modal-footer">
@@ -75,15 +72,45 @@
         <div class="w-64 bg-white shadow-lg p-5 flex flex-col space-y-4">
             <h3 class="text-lg font-semibold">Bem-vindo, {{ auth()->user()->name ?? 'Usuário' }}</h3>
             
-            <!-- Seleção de calendário -->
-            <label for="calendarioSelect" class="text-sm font-medium">Selecionar Calendário:</label>
-            <select id="calendarioSelect" class="w-full p-2 border rounded">
-                <option value="4">Geral</option>
-                <option value="1">Privado</option>
-                <option value="2">Público</option>
-                <option value="3">Grupo 1</option>
-                <option value="4">Grupo 2</option>
-            </select>
+            <!-- Formulário de Criação de Calendário -->
+            <div id="calendarModal" style="display: none;" class="bg-gray-100 p-4 rounded-lg shadow">
+                <label for="calendarName" class="block text-sm font-medium text-gray-700 mb-2">Nome:</label>
+                <input type="text" id="calendarName" placeholder="Nome do calendário" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-200 focus:border-blue-500">
+
+                <label for="type" class="block text-sm font-medium text-gray-700 mb-2">Agenda:</label>
+                <select name="type" id="type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-200 focus:border-blue-500">
+                    <option value="public">Público</option>
+                    <option value="private">Privado</option>
+                </select>
+
+                <button id="createCalendarBtn" class="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition mt-4">
+                    Salvar
+                </button>
+                <button id="closeModal" class="w-full px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition mt-2">
+                    Fechar
+                </button>
+            </div>
+
+            <!-- Botão para abrir o formulário -->
+            <button id="openModal" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md shadow hover:bg-blue-700 transition duration-300">
+                Criar Calendário
+            </button>
+
+            <!-- Seleção de Calendários -->
+            <div id="calendarCheckboxes" class="mt-6 bg-gray-100 p-4 rounded-lg shadow">
+                <h4 class="text-lg font-bold mb-4">Selecione um Calendário</h4>
+                <div class="space-y-3">
+                    <div>
+                        <input type="checkbox" id="calendar-1" value="1" class="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="calendar-1" class="ml-2 text-gray-700">Calendário 1</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="calendar-2" value="2" class="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="calendar-2" class="ml-2 text-gray-700">Calendário 2</label>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- Filtros -->
             <h4 class="text-sm font-medium">Filtros</h4>

@@ -2,48 +2,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\Calendars;
+use App\Models\CalendarUser;
 use App\Models\Evento;
 use Illuminate\Http\Request;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
 
 class EventoController extends Controller
 {
     public function index(Request $request)
     {
         $user = Auth::user();
-        $calendario = $request->query('calendario', 4); 
+        $calendarId = $request->query('calendar_id'); 
     
        
-        $query = Evento::query()->select('id', 'title', 'start', 'end', 'color', 'task', 'finalizado', 'description', 'user_id', 'calendar_id');
+        $query = Evento::query()->select('id', 'title', 'start', 'end', 'color', 'task', 'finalizado', 'description', 'user_id', 'calendar_id')->where('user_id', $user->id);
         //filtro
         if ($request->has('task')) {
             $query->where('task', $request->task == '1');
             
         }
-        //aki deixa os calendarios de acordo com o selecionado sendo o Geral como default
-        if ($calendario == 4) {
-            $query->where(function ($q) use ($user) {
-                $q->where('user_id', $user->id)
-                  ->whereIn('calendar_id', [1, 2]);
-            })->orWhere('calendar_id', 2);
-        } elseif ($calendario == 1) {
-            $query->where('user_id', $user->id)->where('calendar_id', 1);
-        } elseif ($calendario == 2) {
-            $query->where('calendar_id', 2);
-        } else {
-            return response()->json(['error' => 'Calendário inválido'], 400);
-        }
-        //filtro
-        if ($request->has('task')) {
-            $query->where('task', $request->task == '1');
-            
-        }
+       
+        // if(!empty($calendarId)){
+        //     $query->where('calendar_id', $calendarId);
+        // }
         
         // Obtém os eventos após os filtros
         $eventos = $query->get();
-    
         return response()->json($eventos);
     }
 
@@ -60,19 +45,19 @@ class EventoController extends Controller
             'task' => 'nullable|boolean',
             'finalizado' => 'nullable|boolean',
             'description' => 'nullable|string',
-            'user_id' => 'integer|nullable',
-            'calendar_id' => 'required|integer'
+            'calendar_id' => 'required|integer|exists:calendars,id',
             
         ]);
+        $dados['user_id'] = Auth::id();
         $dados['task'] = $request->has('task') ? (bool) $request->task : false;
         $dados['finalizado'] = $request->has('finalizado') ? (bool) $request->finalizado : false;
 
-        if (empty($dados['id'])) {
+        if (empty($request->id)) {
             Evento::create($dados);
             return redirect()->back()->with('success', 'Evento criado com sucesso!');
         }
 
-        $evento = Evento::findOrFail($dados['id']);
+        $evento = Evento::findOrFail($request->id);
         $evento->update($dados);
 
         return redirect()->back()->with('success', 'Evento atualizado com sucesso!');
@@ -85,7 +70,7 @@ class EventoController extends Controller
         $evento->update($request->validate([
             'title' => 'required|string|max:255',
             'start' => 'required|date',
-            'end' => 'date|after_or_equal:start',
+            'end' => 'nullable|date|after_or_equal:start',
             'color' => 'nullable|string|max:7',
             'task' => 'nullable|boolean',
             'finalizado' => 'nullable|boolean',
@@ -112,17 +97,23 @@ class EventoController extends Controller
         $evento->delete();
         return response()->json(['success' => true, 'message' => 'Evento excluído com sucesso']);
     }
-    public function getUsers(){
-        
-            $users = User::orderBy('name', 'asc')->get(['id', 'name']);
-            return response()->json($users);
-    }     
-    
+
     public function getCalendarios()
 {
-    $calendarios = Calendars::all();
-    
-    return response()->json($calendarios);
+    $user = Auth::user();
+    //dd($user);
+    $calendarios = DB::table('calendar_user')
+    ->join('calendars', 'calendar_user.calendar_id', '=', 'calendars.id')
+    ->where('calendar_user.user_id', $user->id)
+    ->select('calendars.id', 'calendars.name', 'calendars.type')
+    ->get();
+    // dd($calendarios);
+    $calendarioPrivado = $calendarios->where('type', 'private')->first();
+    // dd($calendarioPrivado);
 
+    return response()->json([
+        'calendarios' => $calendarios,
+        'default_calendar_id' => $calendarioPrivado ? $calendarioPrivado->id : null,
+    ]);
 }
 }

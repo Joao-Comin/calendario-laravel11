@@ -243,3 +243,13 @@ label {
 .calendario-select:focus {
     border-color: #0056b3;
 }
+
+#calendarCheckboxes div {
+    display: flex;
+    align-items: center;
+    margin: auto;
+}
+
+#calendarCheckboxes label {
+    margin-left: 8px;
+}

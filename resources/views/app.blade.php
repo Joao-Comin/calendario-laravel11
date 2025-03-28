@@ -7,13 +7,14 @@
     <title>Tasks</title>
     @vite(['resources/css/style.css'])
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100">
     <div class="modal-opened hidden">
         <div class="modal">
           <div class="modal-header">
               <div class="modal-title">
-                  <h3>Cadastrar</h3>
+                  <h3>Cadastrar Eventos</h3>
               </div>
               <div class="modal-close">x</div>
           </div>
@@ -28,7 +29,7 @@
                   <input type="hidden" name="action" value="">
                   <input type="hidden" name="task" id="task" value="0">
           
-                  <label for="title">Nome</label>
+                  <label for="title">Nome do Evento</label>
                   <input type="text" id="title" name="title" value="{{ old('title') }}">
                  
                   <label for="description">Descrição</label>
@@ -42,11 +43,12 @@
           
                   <label for="end" id="label-end">Fim do Evento</label>
                   <input type="datetime-local" id="end" name="end" value="{{ old('end') }}">
-
-                  <label for="user_id" class="col-sm-2 col-form-label">Usuário</label>
-                  <select name="user_id" id="user_id" class="form-control">
-                      <option value="">Selecione</option>
-                  </select>
+    
+                  <label for="calendar_id" class="col-sm-2 col-form-label">Calendario:</label>
+                   <select name="calendar_id" id="calendar_id" class="form-control">
+                       <option value="">Selecione</option>
+                   </select>
+    
               </div>
               <div class="modal-footer">
                   <button type="submit" class="btn-save">Salvar</button>
@@ -55,13 +57,15 @@
           </form>
         </div>
       </div>
-    <main>
+    </div>
+
+    <!-- Conteúdo Dinâmico -->
+    <main class="px-6 py-4">
         @yield('content')
-        
     </main>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const btn = document.querySelector('.return');
             if (btn) {
                 btn.addEventListener('click', () => {
