@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+#privateArrow, #publicArrow {
+    background: transparent !important; /* Remove o fundo azul */
+    color: #6b7280 !important; /* Define a cor do texto como cinza */
+    font-size: 14px; /* Tamanho da fonte */
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+    border: none;
+    cursor: pointer;
+}
+
+#privateArrow:hover, #publicArrow:hover {
+    color: #4b5563 !important; /* Cor mais escura ao passar o mouse */
+    background: transparent !important; /* Garante que o fundo continue transparente */
+}
+
+#privateArrow:hover, #publicArrow:hover {
+    color: #4b5563 !important;
+    background: transparent !important;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -71,102 +92,173 @@ body {
 /* Modal */
 .modal-opened {
     position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 9;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     opacity: 0;
-    margin-top: -0px;
+    transition: opacity 0.3s ease;
+}
+
+.modal-opened:not(.hidden) {
+    opacity: 1;
 }
 
 .modal {
-    position: fixed;
-    width: 500px;
-    height: auto;
+    width: 90%;
+    max-width: 500px;
     background-color: #fff;
-    margin-left: calc(50% - 250px);
-    margin-top: 30px;
-    padding: 20px;
-    border-radius: 6px;
-    z-index: 99;
-    box-shadow: 7px 6px 30px 0px rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.modal-opened:not(.hidden) .modal {
+    transform: translateY(0);
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+    text-align: center;
+    flex: 1;
 }
 
 .modal-close {
     cursor: pointer;
-    color: red;
-    font-size: 18px;
-    font-weight: 400;
+    color: #6c757d;
+    font-size: 1.5rem;
+    font-weight: 300;
+    transition: color 0.2s ease;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: #495057;
+}
+
+.modal-switch {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.modal-switch > button {
+    
+    border: none;
+    background: none;
+    padding: 12px 24px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6c757d;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.modal-switch button.active {
+    color: #212529;
+}
+
+.modal-switch button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #212529;
 }
 
 .modal-body {
     display: flex;
     flex-direction: column;
-    margin-bottom: 10px;
+    padding: 0 20px 10px;
 }
 
 .modal-body label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #555;
-    margin: 5px 0px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #495057;
+    margin: 8px 0 4px;
 }
 
-.modal-body input {
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
+.modal-body input,
+.modal-body select {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    border: 1px solid #ced4da;
     border-radius: 6px;
-    margin-bottom: 5px;
+    margin-bottom: 12px;
     outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.modal-body input[type=color] {
-    padding: 0;
-    margin: 0;
-    width: 30px;
-    height: 30px;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
+.modal-body input:focus,
+.modal-body select:focus {
+    border-color: #adb5bd;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .modal-footer {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-end;
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    gap: 10px;
 }
 
 .modal-footer button {
-    margin-top: 5px;
-    padding: 10px;
-    font-size: 14px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
     font-weight: 500;
-    background-color: rgb(109, 160, 255);
-    border: 1px solid rgb(109, 160, 255);
-    color: #fff;
     border-radius: 6px;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-save {
+    background-color: #212529;
+    color: white;
+    border: 1px solid #212529;
 }
 
 .btn-save:hover {
-    background-color: rgb(109, 180, 255);
-    color: rgb(109, 160, 255);
+    background-color: #343a40;
+    border-color: #343a40;
 }
 
 .btn-delete {
-    background-color: red !important;
-    border: 1px solid rgb(255, 100, 100) !important;
+    background-color: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
 }
 
 .btn-delete:hover {
-    background-color: rgb(255, 120, 100) !important;
-    color: red;
+    background-color: #c82333;
+    border-color: #bd2130;
 }
 
 .hidden {
@@ -181,75 +273,8 @@ body {
     margin: 10px 0;
     border: 1px solid transparent;
     border-radius: 5px;
-    font-size: 14px;
-}
-
-.modal-switch {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 10px;
-}
-
-.modal-switch button {
-    border: none;
-    background: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-}
-
-.modal-switch button.active {
-    border-bottom: 2px solid #000;
-}
-
-.modal-title {
-    margin-left: 140px;
-    font-size: 20px;
-    font-weight: 600;
+    font-size: 0.85rem;
 }
 .bemvindo{
     text-align: center;
-}
-.container {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-    align-items: center;
-}
-
-label {
-    font-size: 16px;
-    margin-bottom: 10px;
-    display: block;
-    color: #333;
-}
-
-.calendario-select {
-    width: 100%;
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    outline: none;
-    background-color: #f9f9f9;
-    color: #333;
-    transition: border-color 0.3s ease;
-}
-
-.calendario-select:focus {
-    border-color: #0056b3;
-}
-
-#calendarCheckboxes div {
-    display: flex;
-    align-items: center;
-    margin: auto;
-}
-
-#calendarCheckboxes label {
-    margin-left: 8px;
 }

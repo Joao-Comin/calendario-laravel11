@@ -5,7 +5,9 @@ use App\Http\Controllers\EventoController;
 use App\Http\Controllers\TarefasController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\CalendarController;
+use App\Livewire\EventosComponent;
 
+Route::get('/calendar-livewire', EventosComponent::class)->name('calendar.livewire');
 Route::get('/calendar', function () {
     return view('fullcalendar');
 })->name('calendar');

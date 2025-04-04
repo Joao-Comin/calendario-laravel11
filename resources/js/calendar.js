@@ -9,6 +9,28 @@ const Toast = Swal.mixin({
       toast.onmouseleave = Swal.resumeTimer;
     }
   });
+  
+  window.toggleSection = function (sectionId) {
+    console.log("Toggling section:", sectionId);
+    
+    let section = document.getElementById(sectionId);
+    let arrow = document.getElementById(sectionId === 'privateCalendars' ? 'privateArrow' : 'publicArrow');
+
+    if (section.classList.contains('hidden')) {
+        section.classList.remove('hidden');
+        arrow.textContent = '🔽';
+    } else {
+        section.classList.add('hidden');
+        arrow.textContent = '▶';
+    }
+};
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("privateCalendars").classList.remove("hidden");
+    document.getElementById("publicCalendars").classList.add("hidden");
+    document.getElementById("privateArrow").textContent = "🔽"; 
+    document.getElementById("publicArrow").textContent = "▶";
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -31,6 +53,8 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         eventClick: function(info) {
             abrirModalEditar(info);
+            console.log('info cliquei: ', info);
+            
         },
         eventDrop: function(info) {
             moverEvento(info);
@@ -38,7 +62,15 @@ document.addEventListener('DOMContentLoaded', function() {
         eventResize: function(info) {
             moverEvento(info);
         },
-        events: '/eventos', //onde puxa os eventos
+        events: '/eventos',
+        
+        eventDidMount: function(info) {
+            console.log("📢 Evento carregado no calendário:", info.event);
+            
+            if (!info.event.id) {
+                console.error("🚨 ERRO: Evento sem ID!", info.event);
+            }
+        },
 
         customButtons: {
             redirectButton: {
@@ -60,10 +92,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 info.el.style.color = 'black';
             }
         }
+        
     });
-
+    
     calendar.render();
-
+    
     //função para os filtros de tarefas, eventos e sem filtro
     function Filtro(url) {
         //console.log(url);
@@ -101,11 +134,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
-    
     //abrir o modal de criação de eventos/tarefas
     const modal = document.querySelector('.modal-opened');
 
-    const abrirModal = (info,calendarioSelecionado) => {
+    const abrirModal = (info) => {
         if (modal.classList.contains('hidden')) {
             modal.classList.remove('hidden');
             modal.style.transition = 'opacity 300ms';
@@ -113,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 modal.style.opacity = 1;
             }, 100);
         }
-
+    
         document.querySelector('.modal-title h3').innerText = 'Cadastrar Evento';
         document.querySelector('#id').value = '';
         document.querySelector('#title').value = '';
@@ -123,44 +155,53 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('#end').value = info.dateStr;
         document.querySelector('#task').value = "0";
         document.querySelector('#calendar_id').value = "";
-
-// Pega o select
-const SelecionarCalendario = document.querySelector('#calendar_id');
-SelecionarCalendario.innerHTML = '<option value="">Selecione</option>';
-
-// Busca os calendários do usuário autenticado
-fetch('/eventos/calendarios')
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Erro ao carregar calendários: ' + response.statusText);
-        }
-        return response.json();
-    })
-    .then(data => {
-        const { calendarios, default_calendar_id } = data;
-
-        calendarios.forEach(calendario => {
-            const option = document.createElement('option');
-            option.value = calendario.id;
-            option.textContent = calendario.name;
-            SelecionarCalendario.appendChild(option);
+    
+        Livewire.on('CalendariosCarregados', function (data) {
+            if (!Array.isArray(data) || data.length === 0) {
+                console.error("❌ ERRO: `data` não é um array válido!");
+                return;
+            }
+        
+            const responseData = data[0];
+        
+            console.log("🔍 Verificando chaves disponíveis:", Object.keys(responseData));
+        
+            const calendarSelect = document.getElementById('calendar_id');
+            calendarSelect.innerHTML = '<option value="">Selecione</option>';
+        
+            // Tenta acessar responseData.calendarios corretamente
+            if (responseData.hasOwnProperty('calendarios') && Array.isArray(responseData.calendarios)) {
+                console.log("✅ `calendarios` encontrado!", responseData.calendarios);
+        
+                responseData.calendarios.forEach(function (calendario) {
+                    const option = document.createElement('option');
+                    option.value = calendario.id;
+                    option.textContent = calendario.name;
+                    console.log(`📌 Adicionando calendário: ID=${calendario.id}, Nome=${calendario.name}`);
+                    calendarSelect.appendChild(option);
+                });
+        
+            } 
+            if (responseData.default_calendar) {
+                calendarSelect.value = responseData.default_calendar.id || "";
+            }
         });
-
-        // Se houver um calendário privado, selecionar automaticamente
-        if (default_calendar_id) {
-            SelecionarCalendario.value = default_calendar_id;
-        }
-    })
-    .catch(error => {
-        console.error('Erro ao carregar calendários:', error);
-    });
-
         
         
-            };
+        // Dispara o evento para pegar os calendários
+        console.log('Disparando Livewire.dispatch("pegarCalendarios")');
+        Livewire.dispatch('pegarCalendarios');
+    };
+    
+
+      
+        
+            
 
     //abre o modal de editar o evento/tarefa
     const abrirModalEditar = (info) => {
+        console.log(info);
+        
         if (modal.classList.contains('hidden')) {
             modal.classList.remove('hidden');
             modal.style.transition = 'opacity 300ms';
@@ -168,6 +209,7 @@ fetch('/eventos/calendarios')
                 modal.style.opacity = 1;
             }, 100);
         }
+        
         let data_start = [
             info.event.start.toLocaleString().replace(',', '').split(' ')[0].split('/').reverse().join('-'),
             info.event.start.toLocaleString().replace(',', '').split(' ')[1]
@@ -178,7 +220,7 @@ fetch('/eventos/calendarios')
         ].join('T') : '';
 
         console.log(data_start);
-        
+        console.log("📢 ID do evento recebido:", info.event);
         document.querySelector('.modal-title h3').innerHTML = 'Editar Eventos';
         document.querySelector('#id').value = info.event.id;
         document.querySelector('#title').value = info.event.title;
@@ -190,108 +232,86 @@ fetch('/eventos/calendarios')
         document.querySelector('#calendar_id').value = info.event.extendedProps.calendar_id;
         document.querySelector('.btn-delete').classList.remove('hidden');
 
-        // Pegar os calendários
-        const SelecionarCalendario = document.querySelector('#calendar_id');
-        SelecionarCalendario.innerHTML = '<option value="">Selecione</option>';
+        let eventoCalendarId = info.event ? info.event.extendedProps.calendar_id : null;
+        Livewire.dispatch('pegarCalendarios');
 
-        fetch('/eventos/calendarios')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erro ao carregar calendários: ' + response.statusText);
-                }
-                return response.json();
-            })
-            .then(data => {
-                const calendars = data.calendarios;
-                const selectedCalendarId = info.event.extendedProps.calendar_id; 
-
-                calendars.forEach(calendario => {
-                    const option = document.createElement('option');
-                    option.value = calendario.id;
-                    option.textContent = calendario.name;
-
-                    if (calendario.id == selectedCalendarId) {
-                        option.selected = true;
-                    }
-
-                    SelecionarCalendario.appendChild(option);
-                });
-            })
-            .catch(error => {
-                console.error('Erro ao carregar calendários:', error);
+        Livewire.on('CalendariosCarregados', function (data) {
+            console.log('📩 Dados Recebidos do Livewire:', data);
+        
+            if (!Array.isArray(data) || !data[0].calendarios) {
+                console.warn("⚠️ `calendarios` não encontrado ou não é um array!");
+                return;
+            }
+        
+            const calendarSelect = document.getElementById('calendar_id');
+            calendarSelect.innerHTML = '<option value="">Selecione</option>';
+        
+            data[0].calendarios.forEach(function (calendario) {
+                const option = document.createElement('option');
+                option.value = calendario.id;
+                option.textContent = calendario.name;
+                calendarSelect.appendChild(option);
             });
-
-            if (info.event.extendedProps.task == 1 || info.event.extendedProps.task === "1") {
-                    btnTarefa.click();
-                } else {
-                    btnEvento.click();
-                }
-            };
+        
+            
+            if (eventoCalendarId) {
+                calendarSelect.value = eventoCalendarId;
+                console.log(`✅ Selecionado o calendário do evento: ${eventoCalendarId}`);
+            } else if (data[0].default_calendar_id) {
+                calendarSelect.value = data[0].default_calendar_id;
+                console.log(`✅ Selecionado calendário padrão: ${data[0].default_calendar_id}`);
+            }
+        });        
+};
+        
+    
+           
+            
 
     //faz com que consiga mover e salvar no banco a modificação do evento em drag and drop
     const moverEvento = (info) => {
-        //console.log('info:',info);
         let id = info.event.id;
         let start = info.event.startStr;
         let end = info.event.endStr;
         let color = info.event.backgroundColor;
         let title = info.event.title;
-        let description = info.event.description;
+        let description = info.event.extendedProps.description;
         let task = info.event.extendedProps.task;
         let finalizado = info.event.extendedProps.finalizado;
         let calendar_id = info.event.extendedProps.calendar_id;
-
-        // console.log('start:', start);
-    let data_start = [
-        info.event.start.toLocaleString().replace(',', '').split(' ')[0].split('/').reverse().join('-'),
-        info.event.start.toLocaleString().replace(',', '').split(' ')[1]
-    ].join('T');
-
     
-    let data_end = info.event.end ? [
-        info.event.end.toLocaleString().replace(',', '').split(' ')[0].split('/').reverse().join('-'),
-        info.event.end.toLocaleString().replace(',', '').split(' ')[1]
-    ].join('T') : '';
-
+        let data_start = [
+            info.event.start.toLocaleString().replace(',', '').split(' ')[0].split('/').reverse().join('-'),
+            info.event.start.toLocaleString().replace(',', '').split(' ')[1]
+        ].join('T');
     
-    let data = {
-        id,
-        title,
-        color,
-        start: data_start, 
-        end: data_end,     
-        description,
-        task,
-        finalizado,
-        calendar_id,
-    };
+        let data_end = info.event.end ? [
+            info.event.end.toLocaleString().replace(',', '').split(' ')[0].split('/').reverse().join('-'),
+            info.event.end.toLocaleString().replace(',', '').split(' ')[1]
+        ].join('T') : null ;
+    
+        let data = {
+            id,
+            title,
+            color,
+            start: data_start,
+            end: data_end,
+            description,
+            task,
+            finalizado,
+            calendar_id,
+        };
+        console.log(data);
         
-
-        fetch(`/api/eventos/${id}`, {
-            method: 'PUT',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Toast.fire({
-                    icon: "success",
-                    title: "Evento Movido Com Sucesso!"
-                  });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro!',
-                    text: 'Não foi possível atualizar o evento.',
-                });
-            }
-        })
-        .catch(error => console.error('Erro:', error));
+        Livewire.dispatch('moverEvento', [data]);
     };
+    Livewire.on('eventoAtualizado', function (data) {
+        Toast.fire({
+            icon: "success",
+            title: 'Evento Movido Com Sucesso'
+        });
+    });
+    
 
     document.querySelector('.modal-close').addEventListener('click', () => fecharModal());
     modal.addEventListener('click', function(event) {
@@ -362,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     btnDelete.addEventListener('click', function() {
         const eventId = document.querySelector('#id').value;
-
+        
         if (!eventId) {
             Swal.fire({
                 icon: 'error',
@@ -383,40 +403,27 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch(`/api/eventos/${eventId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Excluído!',
-                            text: 'O evento foi removido com sucesso!',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 2000);
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro!',
-                            text: 'Não foi possível excluir o evento.',
-                        });
-                    }
-                })
-                .catch(error => console.error('Erro:', error));
+                Livewire.dispatch('deletarEvento', [eventId]);
+                console.log(eventId);
+                
+                
             }
         });
     });
+    Livewire.on('EventoDeletado', function (data) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Sucesso!',
+            text: 'Evento deletado com sucesso',
+            
+        }).then(() => {
+            location.reload();
+        });
+    });
 });
+
+
+
 
 //bloquear os campos no modal de criação/edição de uma task
 document.addEventListener('DOMContentLoaded', function() {
@@ -451,89 +458,152 @@ document.addEventListener('DOMContentLoaded', function() {
     btnEvento.click();
 });
 
-//modal create calendario
+document.addEventListener('DOMContentLoaded', function () {
+    Livewire.on('calendarioCriado', function () {
+        console.log('🔥 Calendário Criado!');
 
-document.getElementById('openModal').addEventListener("click", function(){
-    document.getElementById("calendarModal").style.display = "block";
-
-})
-document.getElementById('closeModal').addEventListener("click", function(){
-    document.getElementById("calendarModal").style.display = "none";
-    
-})
-document.getElementById("createCalendarBtn").addEventListener("click", function() {
-    let calendarName = document.getElementById("calendarName").value;
-    let type = document.getElementById("type").value;
-    console.log(calendarName);
-    console.log(type);
-    
-    
-
-    fetch('/calendario', {
-        method: 'POST',
-        headers: { 
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Content-Type': 'application/json',
-            
-        },
-        body: JSON.stringify({ name: calendarName, type: type })
-    })
-    .then(response => response.json())
-    .then(data => {
         Swal.fire({
             icon: 'success',
             title: 'Criado',
-            text: 'Calendario Criado Com Sucesso',
+            text: 'Calendário Criado Com Sucesso',
             timer: 2000,
             showConfirmButton: false
         }).then(() => {
             window.location.reload();
         });
+
         document.getElementById("calendarModal").style.display = "none";
         document.getElementById("calendarName").value = "";
         document.getElementById("type").value = "";
-    })
-    .catch(error => {
-        console.error("Erro ao criar calendário:", error);
     });
 });
 
+
+// 📌 Modal create calendário
+document.getElementById('openModal').addEventListener("click", function () {
+    document.getElementById("calendarModal").style.display = "block";
+});
+
+document.getElementById('closeModal').addEventListener("click", function () {
+    document.getElementById("calendarModal").style.display = "none";
+});
+
+document.getElementById("createCalendarBtn").addEventListener("click", function () {
+    let calendarName = document.getElementById("calendarName").value;
+    let type = document.getElementById("type").value;
+    let color = document.getElementById("color").value;
+    let calendario = [];
+    calendario.push({
+        name: calendarName,
+        type: type,
+        color: color
+    });
+
+    console.log(calendarName);
+    console.log(type);
+    console.log(color);
+    
+
+    Livewire.dispatch('criarCalendario', [calendario]);
+});
+
+//pegar calendarios do usuario
 const userId = document.getElementById('userId').value;
 
-//mostra os calendarios do usuario
-fetch(`/api/usercalendars/${userId}`)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Erro na API: ' + response.statusText);
+Livewire.dispatch('pegarCalendariosUsuario');
+
+Livewire.on('CalendariosUsuarioCarregados', function (data) {
+    console.log("📩 Dados Recebidos do Livewire:", data);
+    //ta vindo em 2 arrays deixar esse data[0] para o data
+    if (Array.isArray(data) && Array.isArray(data[0])) {
+        data = data[0];
+    }
+
+    if (!Array.isArray(data)) {
+        console.error("❌ 'calendarios' não encontrado ou não é um array válido!", data);
+        return;
+    }
+    // Pegando os containers do HTML para público e privado
+    const publicCalendars = document.getElementById('publicCalendars');
+    const privateCalendars = document.getElementById('privateCalendars');
+
+    // Limpando os containers antes de adicionar novos itens
+    publicCalendars.innerHTML = '';
+    privateCalendars.innerHTML = '';
+
+    data.forEach(calendar => {
+        const calendarItem = document.createElement('div');
+        calendarItem.classList.add("flex", "items-center", "justify-between", "group", "hover:bg-gray-50", "p-", "rounded");
+        
+        // Container do checkbox e label
+        const checkboxContainer = document.createElement('div');
+        checkboxContainer.classList.add("flex", "items-center", "space-x-2", "flex-1");
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `calendar-${calendar.id}`;
+        checkbox.value = calendar.id;
+        checkbox.checked = true;
+        checkbox.classList.add("w-4", "h-4", "text-blue-600", "focus:ring-blue-500", "border-gray-300", "rounded");
+        
+        const label = document.createElement('label');
+        label.htmlFor = `calendar-${calendar.id}`;
+        label.textContent = calendar.name;
+        label.classList.add("ml-2", "text-gray-700", "flex-1");
+        
+        checkboxContainer.appendChild(checkbox);
+        checkboxContainer.appendChild(label);
+        
+        // Adiciona o símbolo ⁝ (três pontos verticais)
+        const menuButton = document.createElement('button');
+        menuButton.innerHTML = '︙';
+        menuButton.classList.add("text-gray-400", "hover:text-gray-600", "text-lg", "font-light", 
+                               "opacity-0", "group-hover:opacity-100", "transition-opacity", 
+                               "cursor-pointer", "px-2", "py-1");
+        menuButton.title = "Opções";
+        menuButton.onclick = function(e) {
+            e.stopPropagation(); // Impede que o clique afete o checkbox
+            abrirMenuCalendario(calendar.id);
+        };
+        
+        calendarItem.appendChild(checkboxContainer);
+        calendarItem.appendChild(menuButton);
+        
+        // Adiciona ao local correto (privado ou público)
+        if (calendar.type === "private") {
+            privateCalendars.appendChild(calendarItem);
+        } else {
+            publicCalendars.appendChild(calendarItem);
         }
-        return response.json();
-    })
-    .then(data => {
-        const calendarCheckboxes = document.getElementById('calendarCheckboxes');
-        calendarCheckboxes.innerHTML = '';
+    });
 
-        data.forEach(calendar => {
-            const checkboxContainer = document.createElement('div');
+        // Evento de clique para carregar/remover eventos ao marcar/desmarcar
+        checkbox.addEventListener("change", function () {
+            if (this.checked) {
+                console.log(`✅ Checkbox ${this.value} marcado. Carregando eventos.`);
+                Livewire.dispatch('carregarEventos', { calendar_id: this.value });
+            } else {
+                console.log(`❌ Checkbox ${this.value} desmarcado. Removendo eventos.`);
+                Livewire.dispatch('removerEventosPorCalendario', { calendar_id: this.value });
+            }
+        
 
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `calendar-${calendar.id}`;
-            checkbox.value = calendar.id;
+        // Carrega os eventos dos calendários já marcados por padrão
+        if (checkbox.checked) {
+            Livewire.dispatch('carregarEventos', { calendar_id: checkbox.value });
+        }
+    });
+});
 
-            const label = document.createElement('label');
-            label.htmlFor = `calendar-${calendar.id}`;
-            label.textContent = calendar.name;
 
-            checkboxContainer.appendChild(checkbox);
-            checkboxContainer.appendChild(label);
 
-            calendarCheckboxes.appendChild(checkboxContainer);
-        });
-    })
-    .catch(error => console.error('Erro ao carregar os calendários:', error));
+
+
 
     
   
+
+
 
 
 

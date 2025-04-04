@@ -10,6 +10,7 @@ class Calendars extends Model
     protected $fillable = [
         'name',
         'type',
+        'color',
     ];
 
     public function users()

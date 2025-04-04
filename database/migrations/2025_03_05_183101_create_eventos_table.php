@@ -15,7 +15,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->datetime('start');
             $table->datetime('end')->nullable();
-            $table->string('color')->max(7);
             $table->boolean('task')->default(false);
             $table->boolean('finalizado')->default(false);
             $table->unsignedBigInteger('user_id')->nullable();

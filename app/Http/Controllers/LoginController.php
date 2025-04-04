@@ -57,6 +57,7 @@ class LoginController extends Controller{
     $calendar = Calendars::create([
         'name' => $user->name,
         'type' => 'private',
+        'color' => '#0000FF'
     ]);
 
     // Criar relação na tabela intermediária

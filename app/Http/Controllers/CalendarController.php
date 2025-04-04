@@ -19,7 +19,8 @@ class CalendarController extends Controller
 
     $dados = $request->validate([
         'name' => 'string|required',
-        'type' => 'required|in:public,private,group,geral'
+        'type' => 'required|in:public,private,group,geral',
+        'color' => 'required'
     ]);
 
     $calendar = Calendars::create($dados);
@@ -42,6 +43,6 @@ public function showUserCalendars($userId) {
         return response()->json(['error' => 'Usuário não encontrado.'], 404);
     }
 }
-
+    
     
 }

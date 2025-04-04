@@ -14,22 +14,36 @@ class EventoController extends Controller
     {
         $user = Auth::user();
         $calendarId = $request->query('calendar_id'); 
-    
+        //dump($calendarId);
        
-        $query = Evento::query()->select('id', 'title', 'start', 'end', 'color', 'task', 'finalizado', 'description', 'user_id', 'calendar_id')->where('user_id', $user->id);
+        $query = Evento::query()
+        ->select('eventos.id', 'eventos.title', 'eventos.start', 'eventos.end', 'eventos.task', 'eventos.finalizado', 'eventos.description', 'eventos.user_id', 'eventos.calendar_id')
+        ->join('calendars', 'eventos.calendar_id', '=', 'calendars.id')
+        ->where(function ($q) use ($user) {
+            $q->where('calendars.type', 'public') 
+            ->orWhere('eventos.user_id', $user->id);
+    });
         //filtro
         if ($request->has('task')) {
             $query->where('task', $request->task == '1');
             
         }
        
-        // if(!empty($calendarId)){
-        //     $query->where('calendar_id', $calendarId);
-        // }
+        if (!empty($calendarId)) {
+           //dump('entrou');
+            // Se for um único valor, transforma em array
+            $ids = is_array($calendarId) ? $calendarId : explode(',', $calendarId);
+            //dump($ids);
+            $query->whereIn('calendar_id', $ids);
+        }else{
+            //dump('não entrou');
+        }
         
         // Obtém os eventos após os filtros
         $eventos = $query->get();
+        
         return response()->json($eventos);
+        
     }
 
 
@@ -39,7 +53,6 @@ class EventoController extends Controller
             'title' => 'required|string|max:255',
             'start' => 'required|date',
             'end' => 'nullable|date|after_or_equal:start',
-            'color' => 'required|string|max:7',
             'id' => 'nullable|integer|exists:eventos,id',
             'action' => 'nullable|string',
             'task' => 'nullable|boolean',
@@ -71,7 +84,6 @@ class EventoController extends Controller
             'title' => 'required|string|max:255',
             'start' => 'required|date',
             'end' => 'nullable|date|after_or_equal:start',
-            'color' => 'nullable|string|max:7',
             'task' => 'nullable|boolean',
             'finalizado' => 'nullable|boolean',
             'description' => 'nullable|string',

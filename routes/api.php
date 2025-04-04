@@ -5,13 +5,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\TarefasController;
 use App\Http\Controllers\CalendarController;
+use App\Http\Livewire\EventosComponent;
 
 
 
 
 //rotas eventos
 Route::put('/eventos/{id}', [EventoController::class, 'update'])->name('eventos.update');
-Route::delete('/eventos/{id}', [EventoController::class, 'destroy'])->name('eventos.destroy');
+//Route::delete('/eventos/{id}', [EventoController::class, 'destroy'])->name('eventos.destroy');
 Route::get('/eventos/usuarios', [EventoController::class, 'getUsers']);
 
 //rotas tarefas
@@ -21,4 +22,4 @@ Route::put('/tarefas/editar/{id}', [TarefasController::class, 'update'])->name('
 Route::put('/tarefas/desfazer/{id}', [TarefasController::class, 'update2'])->name('tarefas.desfazer');
 
 //calendario
-Route::get('/usercalendars/{userId}', [CalendarController::class, 'showUserCalendars']);
+// Route::get('/usercalendars/{userId}', [CalendarController::class, 'showUserCalendars']);

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->enum('type', ['public', 'private', 'group', 'geral'])->default('private');  
+            $table->string('color')->max(7);
             $table->timestamps();
         });
     }
